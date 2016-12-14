@@ -36,7 +36,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -59,15 +59,15 @@
                 <!-- 登録内容を表示 -->
                 <tr>
                   <td><div class="text-center">ニックネーム</div></td>
-                  <td><div class="text-center">Seed kun</div></td>
+                  <td><div class="text-center"><?php echo $_POST['nick_name'];?></div></td>
                 </tr>
                 <tr>
                   <td><div class="text-center">メールアドレス</div></td>
-                  <td><div class="text-center">seed@nex.com</div></td>
+                  <td><div class="text-center"><?php echo $_POST['email'];?></div></td>
                 </tr>
                 <tr>
                   <td><div class="text-center">パスワード</div></td>
-                  <td><div class="text-center">●●●●●●●●</div></td>
+                  <td><div class="text-center"><?php echo $_POST['password'];?></div></td>
                 </tr>
                 <tr>
                   <td><div class="text-center">プロフィール画像</div></td>
@@ -76,7 +76,7 @@
               </tbody>
             </table>
 
-            <a href="index.html">&laquo;&nbsp;書き直す</a> | 
+            <a href="index.php">&laquo;&nbsp;書き直す</a> | 
             <input type="submit" class="btn btn-default" value="会員登録">
           </div>
         </form>
