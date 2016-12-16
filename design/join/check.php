@@ -1,3 +1,45 @@
+<?php
+session_start();
+
+//タイムゾーンのエラーが出た場合
+date_default_timezone_set("Asia/Manila");
+
+
+require('../dbconnect.php');
+
+
+
+//セッションにデータがなかった時にindex.phpへ遷移する
+//ブックマークなどで直接チェック画面に行かないようにする。
+
+if(empty($_SESSION['join'])){
+  header('Location:index.php');
+  exit();
+}
+
+if(!empty($_POST)){
+  //登録処理をする
+  $sql = sprintf('INSERT INTO members SET name="%s", email="%s", password="%s", picture="%s", created="%s"',
+    mysqli_real_escape_string($db, $_SESSION['join']['name']),
+    mysqli_real_escape_string($db, $_SESSION['join']['email']),
+    mysqli_real_escape_string($db, $_SESSION['join']['password']),
+    mysqli_real_escape_string($db, $_SESSION['join']['picture_path']),date('Y-m-d H:i:s')
+    );
+    mysql_query($db, $sql) or die(mysqli_error($db));
+    unset($_SESSION['join']);
+
+    header('Location: thanks.php');
+    exit();
+    
+}
+
+ ?>
+
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -59,32 +101,38 @@
                 <!-- 登録内容を表示 -->
                 <tr>
                   <td><div class="text-center">ニックネーム</div></td>
-                  <td><div class="text-center"><?php echo $_POST['nick_name'];?></div></td>
+                  <td><div class="text-center"><?php echo htmlspecialchars($_SESSION['join']['nick_name'],ENT_QUOTES,'UTF-8');?></div></td>
                 </tr>
                 <tr>
                   <td><div class="text-center">メールアドレス</div></td>
-                  <td><div class="text-center"><?php echo $_POST['email'];?></div></td>
+                  <td><div class="text-center"><?php echo htmlspecialchars($_SESSION['join']['email'],ENT_QUOTES,'UTF-8');?></div></td>
                 </tr>
                 <tr>
                   <td><div class="text-center">パスワード</div></td>
-                  <td><div class="text-center"><?php echo $_POST['password'];?></div></td>
+                  <td><div class="text-center"></div></td>
                 </tr>
                 <tr>
                   <td><div class="text-center">プロフィール画像</div></td>
-                  <td><div class="text-center"><img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="100" height="100"></div></td>
+                  <td><div class="text-center">
+<!--                     <img src="http://c85c7a.medialib.glogster.com/taniaarca/media/71/71c8671f98761a43f6f50a282e20f0b82bdb1f8c/blog-images-1349202732-fondo-steve-jobs-ipad.jpg" width="100" height="100">
+ -->               
+                 <img src="../member_picture/<?php echo htmlspecialchars($_SESSION['join']['picture_path'],ENT_QUOTES,'UTF-8');?>" width="100" height="100" alt="" />
+ 
                 </tr>
               </tbody>
             </table>
-
-            <a href="index.php">&laquo;&nbsp;書き直す</a> | 
+<!-- index.phpに戻る　GET送信のactionで書いたまでの時点　rewriteで書き直せるようにする -->
+            <a href="index.php?action=rewrite">&laquo;&nbsp;書き直す</a> | 
             <input type="submit" class="btn btn-default" value="会員登録">
+         <!-- <input type="hidden" name="action" value="submit"/> -->
+
           </div>
         </form>
       </div>
     </div>
   </div>
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <!--   jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
   </body>

@@ -2,6 +2,9 @@
 //セッションを使うページに必ず入れる
 session_start();
 
+//タイムゾーンのエラーが出た場合
+date_default_timezone_set("Asia/Manila");
+
 // $error_nick_name ='';
 // $error_email ='';
 // $error_password ='';
@@ -36,18 +39,42 @@ $error = array();
 
   }
 
+  $fileName = $_FILES['picture_path']['name'];
+  if(!empty($fileName)){
+    $ext = substr($fileName, -3);
+    if($ext !='jpg' && $ext != 'git' && $ext != 'png'){
+      $error['picture_path'] = 'type';
+    }
+  }
+
+  
+   
+    
 
 //エラーがない場合に便利　
   if(empty($error)){
 
+     //画像をアップロードする
+    $picture_path = date('YmdHis') . $_FILES['picture_path']['name'];
+    move_uploaded_file($_FILES['picture_path']['tmp_name'], '../member_picture/' . $picture_path);
+
+
     //セッションに値を保存
     $_SESSION['join'] = $_POST;
+    $_SESSION['join']['picture_path'] = $picture_path;
 
     //check.phpにへ遷移
     header('Location:check.php');
     exit();
   }
 
+}
+
+//書き直し
+if(isset($_REQUEST['action']) && $_REQUEST['action']== 'rewrite'){
+  $_POST = $_SESSION['join'];
+  //画像の再選択エラーメッセージを表示するために必要
+  $error['rewrite'] = true;
 }
 
   
@@ -109,7 +136,7 @@ $error = array();
     <div class="row">
       <div class="col-md-6 col-md-offset-3 content-margin-top">
         <legend>会員登録</legend>
-        <form method="post" action="index.php" class="form-horizontal" role="form">
+        <form method="post" action="index.php" class="form-horizontal" role="form" enctype="multipart/form-data">
           <!-- ニックネーム -->
           <div class="form-group">
             <label class="col-sm-4 control-label">ニックネーム</label>
@@ -153,6 +180,9 @@ $error = array();
                <?php if(isset($error['password']) && $error['password'] == 'blank'): ?>
               <p class="error"> ※パスワードを入力してください。</p>
             <?php endif; ?>
+            <?php if(isset($error['password']) && $error['password'] == 'length'): ?>
+              <p class="error"> ※パスワードは４文字以上で入力してください。</p>
+            <?php endif; ?>
             </div>
           </div>
           <!-- プロフィール写真 -->
@@ -160,6 +190,12 @@ $error = array();
             <label class="col-sm-4 control-label">プロフィール写真</label>
             <div class="col-sm-8">
               <input type="file" name="picture_path" class="form-control">
+              <?php if (isset($error['picture_path'])&& $error['picture_path'] == 'type'): ?>
+              <p class="error">※写真などは「.gif」「.jpg」「.png」の画像を指定してください。</p>
+            <?php endif; ?>
+            <?php if(!empty($error)): ?>
+            <p class="error">※恐れ入りますが、画像を改めて指定してください。</p>
+          <?php endif; ?>
             </div>
           </div>
 
