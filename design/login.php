@@ -3,25 +3,60 @@ require('dbconnect.php');
 
 session_start();
 
+$email ='';
+$password = '';
+
+//if(!empty($_POST)){より前に置いたのは、POST送信されて値が入る前に　cookieでWEBブラウザに記録されている値を入れるために上に置いている。
+if(isset($_COOKIE['email']) && $_COOKIE['email'] != ''){
+  $_POST['email'] = $_COOKIE['email'];
+  $_POST['password'] = $_COOKIE['password'];
+  $_POST['save'] = 'on';
+}
+
+
+//ログインボタンが押された時（POST送信された時）
 if(!empty($_POST)){
     //ログインの処理
   if($_POST['email'] != '' && $_POST['password'] != ''){
+    //認証処理
+
+    //今入力されたemailとパスワードの組み合わせでデータが取得できるか確認するSQL文
     $sql = sprintf('SELECT * FROM members WHERE email="%s" AND password = "%s"', 
       mysqli_real_escape_string($db, $_POST['email']), 
       mysqli_real_escape_string($db,sha1($_POST['password']))
       );
+    //SQL実行
     $record = mysqli_query($db, $sql) or die(mysqli_error($db));
+
+    //DBからデータが取れなかったらfalseが返ってくるのがfetchの特性
+    //$table = false (データが何も取得できなかった場合、elseに飛ぶ)
     if($table = mysqli_fetch_assoc($record)){
       //ログイン成功
       $_SESSION['id'] = $table['id'];
+      //ログインした時間を入れる。例えば１時間以上何もなかったらログアウトするために必要。
       $_SESSION['time'] = time();
+
+      //ログイン情報を記録する
+      //自動ログインのチェックボックスにチェックが入っていたらCookieに入力情報を保存する。
+      if($_POST['save'] == 'on'){
+        //time()+60*60*24*14は14日間ログイン情報を保存する。
+        setcookie('email',$_POST['email'], time()+ 60*60*24*14);
+        setcookie('password',$_POST['password'],time()+ 60*60*24*14);
+      }
+
       header('Location: index.php');
       exit();
+
     }else{
+      //見つからなかった時
       $error['login'] = 'failed';
     }
     }else{
+      //入ってなかった時
     $error['login'] = 'blank';
+    //ここに直接htmlspecialchars（）
+    $email = htmlspecialchars($_POST['email']); 
+    $password = htmlspecialchars($_POST['password']);
   }
 }
 
@@ -82,17 +117,30 @@ if(!empty($_POST)){
     <div class="row">
       <div class="col-md-6 col-md-offset-3 content-margin-top">
         <legend>ログイン</legend>
+
+        <div id="lead">
+          <p>メールアドレスとパスワードを記入してください</p>
+          <p>入会手続きがまだの方はこちらからどうぞ。</p>
+          <p>&raquo;<a href="join/">入会手続きをする</a></p>
+        </div>
         <form method="post" action="" class="form-horizontal" role="form">
           <!-- メールアドレス -->
           <div class="form-group">
             <label class="col-sm-4 control-label">メールアドレス</label>
             <div class="col-sm-8">
               <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com"
-              value = "<?php echo htmlspecialchars($_POST['email']); ?>" />
-              <?php if ($error['login'] == 'blank'): ?>
-              <p class="error">※メールアドレスとパスワードをご記入ください。</p>
+                value = "<?php echo $email; ?>" />
+
+            <!--   value = "<?php echo htmlspecialchars($_POST['email']); ?>" />
+ -->
+              <!-- 必須エラー -->
+              <?php if(isset($error['login']) && $error['login'] == 'blank'): ?>
+            <p class="error">※　メールアドレスとパスワードをご記入ください。</p>
+
             <?php endif; ?>
-              <?php if ($error['login'] == 'failed'): ?>
+
+          
+              <?php if(isset($error['login']) && $error['login'] == 'failed'): ?>
               <p class="error">※ログインに失敗しました。正しくご記入ください。</p>
              <?php endif; ?>
 
@@ -105,10 +153,23 @@ if(!empty($_POST)){
             <label class="col-sm-4 control-label">パスワード</label>
             <div class="col-sm-8">
               <input type="password" name="password" class="form-control" placeholder=""
-              value = "<?php echo htmlspecialchars($_POST['password']); ?>" />
+              value = "<?php echo $password; ?>" />
+              <!-- value = "<?php echo htmlspecialchars($_POST['password']); ?>" /> -->
             </div>
           </div>
-          <input type="submit" class="btn btn-default" value="ログイン">
+
+　　　　　　<!-- 自動ログインのチェックボックス -->
+         <div class="form-group">
+            <label class="col-sm-4 control-label">自動ログイン</label>
+            <!-- ブートストラップの１２分割分の８分を割り当てる　レイアウトの幅を調節可能 -->
+            <div class="col-sm-8">
+              <input type="checkbox" id="save" name="save" value = "on" />
+              </div>
+          </div>
+
+          
+
+          <input type="submit" class="btn btn-default" value="ログイン"> | <a href="join/" class="btn btn-default">会員登録</a>
         </form>
       </div>
     </div>
