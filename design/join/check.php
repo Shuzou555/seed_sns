@@ -1,9 +1,21 @@
 <?php
+// $dsn = 'mysql:dbname=seed_sns;host=localhost';
+// $user = 'root';
+// $password = 'mysql';
+  
+// $dbh = new PDO($dsn, $user, $password);
+// $dbh->query('SET NAMES utf8');
+
+
 session_start();
 
 //タイムゾーンのエラーが出た場合
 date_default_timezone_set("Asia/Manila");
 
+//dbconnect.phpを読み込む
+//joinと同じ階層に行くため　上に行くために 「../ 」が必要
+//require：エラーが発生したら処理をやめる
+//DB接続など、途中でエラーが出たら処理を止めたいファイルを読み込む場合はrequire
 
 require('../dbconnect.php');
 
@@ -17,21 +29,48 @@ if(empty($_SESSION['join'])){
   exit();
 }
 
+//DB登録処理をする（データがPOST送信されたら）
 if(!empty($_POST)){
-  //登録処理をする
-  $sql = sprintf('INSERT INTO members SET name="%s", email="%s", password="%s", picture="%s", created="%s"',
-    mysqli_real_escape_string($db, $_SESSION['join']['name']),
+  
+  //SQL文を作成
+  //sprintif('今日は％ｓ'、'シード君')；→　今日はシード君
+  //$name=シード君　sprintif('今日は％ｓ'、'$name')；→　今日はシード君
+  //sprintf()関数
+  //指定した文の書式を整えることができる関数
+  //%dは整数、%sは文字列を代入することができる
+
+  $sql = sprintf('INSERT INTO members SET nick_name="%s", email="%s", password="%s", picture_path="%s", created="%s"',
+    //created=now()', date('Y-m-d H:i:s')が必要なくなる。
+
+    //mysqli_real_escape_string SQL用のサニタイジング
+    //PHPからMySQLにデータを登録するときに、MySQLで使用する特殊文字をエスケープする方法
+// 今まではSQL文に「.」を使って受け取った値をそのまま使ってた
+// SQLインジェクション対策として、サニタイズする必要がある
+// この関数はシングルクォーテーションなどの前にバックスラッシュを付けてくれる
+// 例：フォームのパスワードに「’ or ‘A’ = ‘A」などと入れると、ログインできてしまう
+// SELECT * FROM テーブル名 WHERE パスワード = 'password'
+// SELECT * FROM テーブル名 WHERE パスワード = '' OR 'A' = 'A’
+
+    mysqli_real_escape_string($db, $_SESSION['join']['nick_name']),
     mysqli_real_escape_string($db, $_SESSION['join']['email']),
-    mysqli_real_escape_string($db, $_SESSION['join']['password']),
+
+    // sha1(シャーワン)暗号化する関数　16進数の４０byteの文字列を取得する
+    mysqli_real_escape_string($db, sha1($_SESSION['join']['password'])),
     mysqli_real_escape_string($db, $_SESSION['join']['picture_path']),date('Y-m-d H:i:s')
     );
-    mysql_query($db, $sql) or die(mysqli_error($db));
+
+  //mysqli_query()SQL文実行
+    mysqli_query($db, $sql) or die(mysqli_error($db));
+
+    // unset ここから使わないから存在しないよと表す。指定された変数の割当を解除する。ここではセッション情報を破棄している。
     unset($_SESSION['join']);
 
     header('Location: thanks.php');
     exit();
     
 }
+//５　DB切断
+  // $dbh = null;
 
  ?>
 

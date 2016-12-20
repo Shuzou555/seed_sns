@@ -1,9 +1,22 @@
 <?php
+
+// $dsn = 'mysql:dbname=seed_sns;host=localhost';
+// $user = 'root';
+// $password = 'mysql';
+  
+// $dbh = new PDO($dsn, $user, $password);
+// $dbh->query('SET NAMES utf8');
+
 //セッションを使うページに必ず入れる
 session_start();
 
 //タイムゾーンのエラーが出た場合
 date_default_timezone_set("Asia/Manila");
+
+//require：エラーが発生したら処理をやめる
+//DB接続など、途中でエラーが出たら処理を止めたいファイルを読み込む場合はrequire
+require('../dbconnect.php');
+
 
 // $error_nick_name ='';
 // $error_email ='';
@@ -47,6 +60,19 @@ $error = array();
     }
   }
 
+
+//重複アカウントのチェック
+  if(empty($error)){
+    //入ったメールアドレスがデータべースに何件あるかカウントする
+    $sql = sprintf('SELECT COUNT(*) AS cnt FROM members WHERE email="%s"',mysqli_real_escape_string($db, $_POST['email']) );
+    $record = mysqli_query($db, $sql) or die(mysqli_error($db));
+    $table = mysqli_fetch_assoc($record);
+
+    //カウントした数が０以上ならエラーを起こす。duplicate(重複)のエラーを起こす。
+    if($table['cnt'] > 0){
+      $error['email'] = 'duplicate';
+    }
+  }
   
    
     
@@ -76,6 +102,9 @@ if(isset($_REQUEST['action']) && $_REQUEST['action']== 'rewrite'){
   //画像の再選択エラーメッセージを表示するために必要
   $error['rewrite'] = true;
 }
+
+//５　DB切断
+  // $dbh = null;
 
   
 ?>
@@ -164,6 +193,14 @@ if(isset($_REQUEST['action']) && $_REQUEST['action']== 'rewrite'){
               <?php if(isset($error['email']) && $error['email'] == 'blank'): ?>
               <p class="error"> ※メールアドレスを入力してください。</p>
             <?php endif; ?>
+
+            <!-- 重複登録時のエラー時 -->
+            <?php if($error['email'] == 'duplicate'): ?>
+            <p class="error">※　指定されたメールアドレスはすでに登録されています。</p>
+
+            <?php endif; ?>
+
+
 
               
             </div>
