@@ -1,7 +1,7 @@
 <?php 
-require('dbconnect.php');
-
 session_start();
+
+require('dbconnect.php');
 
 $email ='';
 $password = '';
@@ -32,10 +32,10 @@ if(!empty($_POST)){
     //$table = false (データが何も取得できなかった場合、elseに飛ぶ)
     if($table = mysqli_fetch_assoc($record)){
       //ログイン成功
-      $_SESSION['id'] = $table['id'];
+      $_SESSION['id'] = $table['member_id'];
       //ログインした時間を入れる。例えば１時間以上何もなかったらログアウトするために必要。
       $_SESSION['time'] = time();
-
+       
       //ログイン情報を記録する
       //自動ログインのチェックボックスにチェックが入っていたらCookieに入力情報を保存する。
       if($_POST['save'] == 'on'){
@@ -44,7 +44,8 @@ if(!empty($_POST)){
         setcookie('password',$_POST['password'],time()+ 60*60*24*14);
       }
 
-      header('Location: index.php');
+
+      header('Location: index.php'); 
       exit();
 
     }else{
@@ -58,8 +59,10 @@ if(!empty($_POST)){
     $email = htmlspecialchars($_POST['email']); 
     $password = htmlspecialchars($_POST['password']);
   }
-}
+  // var_dump($_SESSION);
 
+}
+// var_dump($_SESSION);
 ?>
 
 

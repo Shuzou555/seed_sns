@@ -4,9 +4,11 @@ require('dbconnect.php');
 session_start();
 
 //セッション情報を削除
+//セッションの中身を上書きにして空にする。
 $_SESSION = array();
 if (ini_get("session.use_cookies")){
 	$params = session_get_cookie_params();
+	//現在時間より過去に設定することで無効にさせる
 	setcookie(session_name(), '', time() - 42000,
 		$params["path"], $params["domain"],
 		$params["secure"], $params["httponly"]
@@ -18,7 +20,7 @@ session_destroy();
 setcookie('email', '', time() - 3600);
 setcookie('password', '', time() - 3600);
 
-header('Location: login.php');
+header('Location: index.php');
 exit();
 
 ?>
