@@ -92,7 +92,7 @@ function h($value){
           </p>
           <p class="day">
              <?php echo h($tweet['created']);?>
-            [<a href="delete.php?tweet_id=<?php echo h($tweet['tweet_id'])?>" style="color: #F33;">削除</a>]
+            [<a href="#" style="color: #F33;">削除</a>]
           </p>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
